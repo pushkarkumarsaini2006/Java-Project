@@ -1,15 +1,6 @@
 [build]
-  command = "npm run build:client"
-  functions = "netlify/functions"
+  command = "npm run build"
   publish = "dist/spa"
 
-
-[functions]
-  external_node_modules = ["express"]
-  node_bundler = "esbuild"
-  
-[[redirects]]
-  force = true
-  from = "/api/*"
-  status = 200
-  to = "/.netlify/functions/api/:splat"
+# Note: Frontend SPA only - API is Spring Boot backend
+# Set VITE_API_BASE_URL environment variable to your Spring Boot API URL

@@ -1,8 +1,8 @@
 # LeafStack Library Management System
 
-A modern, full-stack library management system built with React, Express, TypeScript, and MongoDB. This application provides comprehensive book management, user authentication, and loan tracking capabilities for libraries.
+A modern, full-stack library management system built with **React + TypeScript (Vite)** frontend and **Spring Boot (Java)** backend, using **MongoDB** for data persistence. This application provides comprehensive book management, user authentication, and loan tracking capabilities for libraries.
 
-![Library Management System](https://img.shields.io/badge/Status-Active-green) ![MongoDB](https://img.shields.io/badge/Database-MongoDB-green) ![React](https://img.shields.io/badge/Frontend-React%2018-blue) ![Express](https://img.shields.io/badge/Backend-Express-lightgrey)
+![Library Management System](https://img.shields.io/badge/Status-Active-green) ![MongoDB](https://img.shields.io/badge/Database-MongoDB-green) ![React](https://img.shields.io/badge/Frontend-React%2018-blue) ![Spring%20Boot](https://img.shields.io/badge/Backend-Spring%20Boot-brightgreen) ![TypeScript](https://img.shields.io/badge/Language-TypeScript-blue)
 
 ## 🚀 Features
 
@@ -38,13 +38,11 @@ A modern, full-stack library management system built with React, Express, TypeSc
 - **Vite** - Fast build tool and dev server
 
 ### Backend
-- **Node.js** - JavaScript runtime
-- **Express 5** - Web application framework
-- **TypeScript** - Type-safe server development
+- **Java 17** - LTS runtime
+- **Spring Boot 3** - REST API framework
+- **Spring Security + JWT** - Authentication & authorization
 - **MongoDB** - NoSQL database
-- **Mongoose** - MongoDB object modeling
-- **JWT** - Secure authentication
-- **bcrypt** - Password hashing
+- **BCrypt** - Password hashing
 
 ### Development Tools
 - **pnpm** - Fast, disk space efficient package manager
@@ -56,9 +54,11 @@ A modern, full-stack library management system built with React, Express, TypeSc
 
 Before you begin, ensure you have met the following requirements:
 
-- **Node.js** (v18 or higher)
+- **Java 17+** - For Spring Boot backend
+- **Node.js** (v18 or higher) - For React frontend development
 - **pnpm** (v8 or higher) - `npm install -g pnpm`
-- **MongoDB** - Either local installation or MongoDB Atlas account
+- **MongoDB Atlas account** OR local MongoDB installation
+- **Maven 3.6+** - For building Spring Boot application
 
 ## 🚀 Quick Start
 
@@ -73,47 +73,46 @@ cd Java-Project
 pnpm install
 ```
 
-### 3. Environment Setup
-Create a `.env` file in the root directory (or copy from `.env.example`):
+### 3. MongoDB Atlas Setup
 
-```env
-# JWT Configuration
-JWT_SECRET=your-super-secure-jwt-secret-key-here
+Your Spring Boot backend is pre-configured to use MongoDB Atlas:
 
-# MongoDB Configuration
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/leafstack-library
-# For local MongoDB:
-# MONGODB_URI=mongodb://localhost:27017/leafstack-library
+1. The connection string is already set in `server/src/main/resources/application.properties`
+2. Database: `leafstack-library`
+3. If you want to use a different MongoDB instance, update the URI in `application.properties`
 
-# API Configuration
-PING_MESSAGE="LeafStack Library API is running"
+For local MongoDB (optional):
+```properties
+spring.data.mongodb.uri=mongodb://localhost:27017/leafstack-library
 ```
 
-### 4. Database Setup
-
-#### Option A: MongoDB Atlas (Cloud)
-1. Create a free account at [MongoDB Atlas](https://www.mongodb.com/atlas)
-2. Create a new cluster
-3. Get your connection string and update `MONGODB_URI` in `.env`
-
-#### Option B: Local MongoDB
-1. Install MongoDB locally
-2. Start MongoDB service
-3. Use `MONGODB_URI=mongodb://localhost:27017/leafstack-library`
-
-### 5. Start the Development Server
+### 4. Start the Development Servers (Frontend + Backend)
 ```bash
+# Start both servers together
+pnpm dev:full
+```
+
+**OR start them separately:**
+
+```bash
+# Terminal 1: Start Spring Boot backend
+pnpm dev:backend
+
+# Terminal 2: Start React frontend
 pnpm dev
 ```
 
 The application will be available at:
-- **Frontend**: http://localhost:8080
-- **API**: http://localhost:8080/api
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8080/api
 
-### 6. Default Admin Account
-The system automatically creates a default admin account:
-- **Email**: admin@library.com
-- **Password**: admin123
+### 5. Default Admin Account
+On first run, the backend seeds a default admin account:
+- **Email**: `admin@leafstack.local`
+- **Password**: `admin12345`
+
+### 6. Sample Data
+The system automatically seeds sample books and borrowing data for testing.
 
 ## 📁 Project Structure
 
@@ -125,12 +124,14 @@ The system automatically creates a default admin account:
 │   ├── hooks/             # Custom React hooks
 │   ├── pages/             # Route components
 │   └── App.tsx            # Main app component with routing
-├── server/                # Express backend application
-│   ├── config/            # Database and app configuration
-│   ├── middleware/        # Express middleware
-│   ├── models/            # MongoDB/Mongoose models
-│   ├── routes/            # API route handlers
-│   └── index.ts           # Server entry point
+├── server/                # Spring Boot backend (Java)
+│   ├── src/main/java/com/leafstack/library
+│   │   ├── controller/    # REST controllers
+│   │   ├── service/       # Business logic
+│   │   ├── repository/    # Mongo repositories
+│   │   ├── security/      # JWT & security config
+│   │   └── config/        # App config & seeders
+│   └── src/main/resources/application.properties
 ├── shared/                # Shared types and utilities
 └── public/                # Static assets
 ```
@@ -149,28 +150,47 @@ pnpm typecheck    # TypeScript type checking
 pnpm format.fix   # Format code with Prettier
 ```
 
-## 🌐 API Endpoints
+## 🌐 API Documentation
+
+The backend provides REST endpoints under `/api/library/*`:
 
 ### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
-- `GET /api/auth/verify` - Verify JWT token
+- `POST /api/library/auth/register` - Register new user
+- `POST /api/library/auth/login` - User login
+- `POST /api/library/auth/refresh` - Refresh JWT token
 
 ### Books
-- `GET /api/books` - Get all books
-- `POST /api/books` - Add new book (Admin only)
-- `PUT /api/books/:id` - Update book (Admin only)
-- `DELETE /api/books/:id` - Delete book (Admin only)
+- `GET /api/library/books` - Get all books
+- `POST /api/library/books` - Add new book (Admin only)
+- `PUT /api/library/books/{id}` - Update book (Admin only)
+- `DELETE /api/library/books/{id}` - Delete book (Admin only)
 
-### Members
-- `GET /api/members` - Get all members (Admin only)
-- `POST /api/members` - Add new member (Admin only)
-- `DELETE /api/members/:id` - Delete member (Admin only)
+### Users
+- `GET /api/library/users` - Get all users (Admin only)
+- `GET /api/library/users/profile` - Get current user profile
+- `PUT /api/library/users/profile` - Update user profile
 
-### Loans
-- `GET /api/loans` - Get all loans
-- `POST /api/loans/borrow` - Borrow a book
-- `POST /api/loans/return` - Return a book
+### Borrowing
+- `GET /api/library/borrows` - Get all borrows
+- `POST /api/library/borrows` - Borrow a book
+- `PUT /api/library/borrows/{id}/return` - Return a book
+
+## 📦 Production Deployment
+
+1. **Build the frontend**:
+   ```bash
+   pnpm build
+   ```
+
+2. **Package the backend**:
+   ```bash
+   cd server
+   mvn clean package
+   ```
+
+3. **Deploy**:
+   - **Backend**: Deploy `target/library-backend-1.0.0.jar` to your cloud provider
+   - **Frontend**: Deploy the `dist/` folder to Netlify, Vercel, or any static hosting service
 
 ## 🔐 Authentication & Authorization
 
@@ -245,21 +265,24 @@ pnpm start
 ```
 
 ### Environment Variables for Production
-Ensure these environment variables are set in production:
+Frontend (Vite):
 ```env
-NODE_ENV=production
-JWT_SECRET=your-production-jwt-secret
-MONGODB_URI=your-production-mongodb-uri
-PORT=3000
+VITE_API_BASE_URL=https://your-backend.example.com
+```
+
+Backend (Spring Boot):
+```env
+spring.data.mongodb.uri=your-production-mongodb-uri
+jwt.secret=your-production-jwt-secret
+cors.allowed-origins=https://your-frontend.example.com
 ```
 
 ### Deployment Platforms
-This application can be deployed on:
-- **Vercel** - Frontend and serverless functions
-- **Netlify** - Static site with serverless functions
-- **Railway** - Full-stack deployment
-- **DigitalOcean** - VPS deployment
-- **AWS** - EC2, Lambda, or ECS
+This application can be deployed as:
+- **Netlify/Vercel (Frontend SPA)** + **Render/Heroku/AWS/VM (Spring Boot API)**
+- **Single VM/Kubernetes** hosting both services
+
+For Netlify, set `VITE_API_BASE_URL` to your Spring Boot API origin. The existing `[[redirects]]` for `/api/*` targets a serverless function template and is not used when `VITE_API_BASE_URL` is configured.
 
 ## 🧪 Testing
 

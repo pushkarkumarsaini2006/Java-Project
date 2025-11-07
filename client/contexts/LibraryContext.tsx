@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useAuth } from "./AuthContext";
+import { apiFetch, authHeaders } from "@/lib/api";
 
 // Types (matching server types)
 export interface Book {
@@ -81,11 +82,11 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
   // Helper function to make authenticated API calls
   const apiCall = async (url: string, options: RequestInit = {}) => {
     const token = localStorage.getItem("leafstack_token");
-    const response = await fetch(url, {
+    const response = await apiFetch(url, {
       ...options,
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+        ...authHeaders(token || undefined),
         ...options.headers,
       },
     });
@@ -103,19 +104,17 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
     
     setIsLoading(true);
     try {
-      const [booksData, borrowsData, membersData] = await Promise.all([
-        apiCall("/api/books"),
+      const [booksData, borrowsData] = await Promise.all([
+        apiCall("/api/library/books"),
         user.role === "admin" 
-          ? apiCall("/api/loans") // Admin gets all borrows
-          : apiCall(`/api/loans?memberId=${user.id}`), // Users get only their borrows
-        user.role === "admin" ? apiCall("/api/members") : Promise.resolve([])
+          ? apiCall("/api/library/admin/borrows")
+          : apiCall(`/api/library/borrows/my`)
       ]);
 
       setBooks(booksData);
       setBorrows(borrowsData);
-      if (user.role === "admin") {
-        setMembers(membersData);
-      }
+      // Members endpoint not implemented in backend; leave empty
+      setMembers([]);
     } catch (error) {
       console.error("Failed to fetch library data:", error);
     } finally {
@@ -126,7 +125,7 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
   // Book operations
   const addBook = async (bookData: Omit<Book, 'id' | 'addedAt' | 'available'>) => {
     try {
-      const newBook = await apiCall("/api/books", {
+      const newBook = await apiCall("/api/library/admin/books", {
         method: "POST",
         body: JSON.stringify({ ...bookData, available: bookData.copies }),
       });
@@ -140,7 +139,7 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   const updateBook = async (id: string, updates: Partial<Book>) => {
     try {
-      const updatedBook = await apiCall(`/api/books/${id}`, {
+      const updatedBook = await apiCall(`/api/library/admin/books/${id}`, {
         method: "PUT",
         body: JSON.stringify(updates),
       });
@@ -154,7 +153,7 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   const deleteBook = async (id: string) => {
     try {
-      await apiCall(`/api/books/${id}`, { method: "DELETE" });
+  await apiCall(`/api/library/admin/books/${id}`, { method: "DELETE" });
       setBooks(prev => prev.filter(book => book.id !== id));
       return true;
     } catch (error) {
@@ -165,9 +164,8 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   const deleteMember = async (id: string) => {
     try {
-      await apiCall(`/api/members/${id}`, { method: "DELETE" });
-      setMembers(prev => prev.filter(member => member.id !== id));
-      return true;
+  console.warn("deleteMember is not supported by backend API");
+  return false;
     } catch (error) {
       console.error("Failed to delete member:", error);
       return false;
@@ -179,12 +177,11 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
     if (!user) return false;
     
     try {
-      const newBorrow = await apiCall("/api/loans/borrow", {
+      const newBorrow = await apiCall("/api/library/borrows", {
         method: "POST",
         body: JSON.stringify({
           bookId,
-          memberId: user.id,
-          memberName: user.name,
+          // userId and userName will be derived from JWT on the server
         }),
       });
       
@@ -206,7 +203,7 @@ export function LibraryProvider({ children }: LibraryProviderProps) {
 
   const returnBook = async (borrowId: string) => {
     try {
-      const updatedBorrow = await apiCall(`/api/loans/${borrowId}/return`, {
+      const updatedBorrow = await apiCall(`/api/library/borrows/${borrowId}/return`, {
         method: "PUT",
       });
       

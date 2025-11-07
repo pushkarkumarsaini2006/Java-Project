@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { apiFetch, authHeaders } from "@/lib/api";
 
 export interface User {
   id: string;
@@ -45,9 +46,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
-      const response = await fetch("/api/auth/verify", {
+      const response = await apiFetch("/api/auth/verify", {
         headers: {
-          Authorization: `Bearer ${token}`,
+          ...authHeaders(token),
         },
       });
 
@@ -67,7 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      const response = await fetch("/api/auth/login", {
+      const response = await apiFetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
