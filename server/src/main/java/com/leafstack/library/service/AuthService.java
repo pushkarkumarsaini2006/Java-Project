@@ -50,6 +50,9 @@ public class AuthService {
         }
 
         String userId = jwtUtil.getUserIdFromToken(token);
+        if (userId == null) {
+            throw new RuntimeException("Invalid token: no user ID found");
+        }
         Optional<User> userOpt = userRepository.findById(userId);
         
         if (!userOpt.isPresent()) {

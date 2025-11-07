@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -29,6 +30,7 @@ public class BookService {
     }
 
     public BookResponse getBookById(String id) {
+        Objects.requireNonNull(id, "Book ID cannot be null");
         Optional<Book> bookOpt = bookRepository.findById(id);
         if (!bookOpt.isPresent()) {
             throw new RuntimeException("Book not found");
@@ -56,6 +58,7 @@ public class BookService {
     }
 
     public BookResponse updateBook(String id, BookRequest bookRequest) {
+        Objects.requireNonNull(id, "Book ID cannot be null");
         Optional<Book> bookOpt = bookRepository.findById(id);
         if (!bookOpt.isPresent()) {
             throw new RuntimeException("Book not found");
@@ -88,6 +91,7 @@ public class BookService {
     }
 
     public void deleteBook(String id) {
+        Objects.requireNonNull(id, "Book ID cannot be null");
         Optional<Book> bookOpt = bookRepository.findById(id);
         if (!bookOpt.isPresent()) {
             throw new RuntimeException("Book not found");

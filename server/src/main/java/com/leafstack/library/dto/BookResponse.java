@@ -1,7 +1,6 @@
 package com.leafstack.library.dto;
 
 import com.leafstack.library.model.Book;
-import java.time.LocalDateTime;
 
 public class BookResponse {
     private String id;

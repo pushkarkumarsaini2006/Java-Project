@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -42,7 +43,8 @@ public class BorrowService {
 
     public BorrowResponse borrowBook(BorrowRequest borrowRequest) {
         // Check if book exists and is available
-        Optional<Book> bookOpt = bookRepository.findById(borrowRequest.getBookId());
+        String bookId = Objects.requireNonNull(borrowRequest.getBookId(), "Book ID cannot be null");
+        Optional<Book> bookOpt = bookRepository.findById(bookId);
         if (!bookOpt.isPresent()) {
             throw new RuntimeException("Book not found");
         }
@@ -53,22 +55,23 @@ public class BorrowService {
         }
 
         // Check if user exists
-        Optional<User> userOpt = userRepository.findById(borrowRequest.getUserId());
+        String userId = Objects.requireNonNull(borrowRequest.getUserId(), "User ID cannot be null");
+        Optional<User> userOpt = userRepository.findById(userId);
         if (!userOpt.isPresent()) {
             throw new RuntimeException("User not found");
         }
 
         // Check if user already borrowed this book
         Optional<Borrow> existingBorrow = borrowRepository.findByBookIdAndUserIdAndStatus(
-            borrowRequest.getBookId(), borrowRequest.getUserId(), Borrow.Status.BORROWED);
+            bookId, userId, Borrow.Status.BORROWED);
         if (existingBorrow.isPresent()) {
             throw new RuntimeException("User has already borrowed this book");
         }
 
         // Create new borrow record
         Borrow borrow = new Borrow(
-            borrowRequest.getBookId(),
-            borrowRequest.getUserId(),
+            bookId,
+            userId,
             borrowRequest.getUserName()
         );
 
@@ -82,6 +85,7 @@ public class BorrowService {
     }
 
     public BorrowResponse returnBook(String borrowId) {
+        Objects.requireNonNull(borrowId, "Borrow ID cannot be null");
         Optional<Borrow> borrowOpt = borrowRepository.findById(borrowId);
         if (!borrowOpt.isPresent()) {
             throw new RuntimeException("Borrow record not found");
@@ -97,7 +101,9 @@ public class BorrowService {
         borrow.setReturnDate(LocalDateTime.now());
 
         // Update book availability
-        Optional<Book> bookOpt = bookRepository.findById(borrow.getBookId());
+        String bookId = borrow.getBookId();
+        Objects.requireNonNull(bookId, "Book ID from borrow record cannot be null");
+        Optional<Book> bookOpt = bookRepository.findById(bookId);
         if (bookOpt.isPresent()) {
             Book book = bookOpt.get();
             book.setAvailable(book.getAvailable() + 1);
@@ -121,7 +127,9 @@ public class BorrowService {
         response.setStatus(borrow.getStatus().getValue());
 
         // Get book details
-        Optional<Book> bookOpt = bookRepository.findById(borrow.getBookId());
+        String bookId = borrow.getBookId();
+        Objects.requireNonNull(bookId, "Book ID from borrow record cannot be null");
+        Optional<Book> bookOpt = bookRepository.findById(bookId);
         if (bookOpt.isPresent()) {
             Book book = bookOpt.get();
             response.setBookTitle(book.getTitle());

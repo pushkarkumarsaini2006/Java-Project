@@ -26,4 +26,5 @@ com\leafstack\library\controller\AuthController.class
 com\leafstack\library\dto\BookResponse.class
 com\leafstack\library\controller\DemoController.class
 com\leafstack\library\dto\UserResponse.class
+com\leafstack\library\config\SampleDataSeeder.class
 com\leafstack\library\model\Book.class

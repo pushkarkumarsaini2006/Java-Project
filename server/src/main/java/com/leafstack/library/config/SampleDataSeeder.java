@@ -35,11 +35,10 @@ public class SampleDataSeeder {
             long borrowCount = borrowRepository.count();
             log.info("Current counts - users: {}, books: {}, borrows: {}", userCount, bookCount, borrowCount);
             if (bookCount == 0) {
-                List<Book> samples = List.of(
-                        new Book("Clean Code", "Robert C. Martin", "9780132350884", "Programming", 5, "A Handbook of Agile Software Craftsmanship"),
-                        new Book("Effective Java", "Joshua Bloch", "9780134685991", "Programming", 4, "Best practices for the Java platform"),
-                        new Book("Design Patterns", "Erich Gamma", "9780201633610", "Software Engineering", 3, "Elements of Reusable Object-Oriented Software")
-                );
+                List<Book> samples = new java.util.ArrayList<>();
+                samples.add(new Book("Clean Code", "Robert C. Martin", "9780132350884", "Programming", 5, "A Handbook of Agile Software Craftsmanship"));
+                samples.add(new Book("Effective Java", "Joshua Bloch", "9780134685991", "Programming", 4, "Best practices for the Java platform"));
+                samples.add(new Book("Design Patterns", "Erich Gamma", "9780201633610", "Software Engineering", 3, "Elements of Reusable Object-Oriented Software"));
                 bookRepository.saveAll(samples);
                 log.info("Seeded sample books: {}", samples.size());
             }
